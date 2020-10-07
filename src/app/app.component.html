@@ -1,20 +1,153 @@
-<!--The content below is only a placeholder and can be replaced.-->
-<div style="text-align:center">
-  <h1>
-    Welcome to {{ title }}!
-  </h1>
-  <img width="300" alt="Angular Logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTAgMjUwIj4KICAgIDxwYXRoIGZpbGw9IiNERDAwMzEiIGQ9Ik0xMjUgMzBMMzEuOSA2My4ybDE0LjIgMTIzLjFMMTI1IDIzMGw3OC45LTQzLjcgMTQuMi0xMjMuMXoiIC8+CiAgICA8cGF0aCBmaWxsPSIjQzMwMDJGIiBkPSJNMTI1IDMwdjIyLjItLjFWMjMwbDc4LjktNDMuNyAxNC4yLTEyMy4xTDEyNSAzMHoiIC8+CiAgICA8cGF0aCAgZmlsbD0iI0ZGRkZGRiIgZD0iTTEyNSA1Mi4xTDY2LjggMTgyLjZoMjEuN2wxMS43LTI5LjJoNDkuNGwxMS43IDI5LjJIMTgzTDEyNSA1Mi4xem0xNyA4My4zaC0zNGwxNy00MC45IDE3IDQwLjl6IiAvPgogIDwvc3ZnPg==">
+<div class="toolbar" role="banner">
+    <div class="dropdown customCur" style="width: 10%;
+    margin-left: 15%;">
+        <span class="customCur">Select Type</span>
+        <div class="dropdown-content">
+            <div class="customCur" *ngFor="let option of optionList" style="color: black;margin: 5px;" (click)="selectOption(option.value)">{{option.label}}</div>
+        </div>
+    </div>
 </div>
-<h2>Here are some links to help you start: </h2>
-<ul>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://angular.io/tutorial">Tour of Heroes</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://github.com/angular/angular-cli/wiki">CLI Documentation</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://blog.angular.io/">Angular blog</a></h2>
-  </li>
-</ul>
 
+<div *ngIf="selectedValue === 'validator'" class="fleft" style="width: 96%;margin: 2%;">
+    <textarea name="inputVal" class="textAreaStyle" [(ngModel)]="inputText"></textarea>
+    <div class="fleft width_full" style="margin-top: 10px;">
+        <button class="customCur active_button" (click)="validateInput('button')" [disabled]="inputText === ''">
+          Validate
+        </button>
+        <button (click)="clearInput()" class="customCur active_button" style="color: rgb(7, 131, 168);
+        background-color: white;
+        border: 1px solid rgb(7, 131, 168);
+        margin-left: 1%;">
+          Clear
+        </button>
+    </div>
+    <div class="fleft outputText" [ngClass]="{'successText':validInput, 'failText': !validInput}" style="margin: 1%;width: 97%;" *ngIf="showResponse">
+        <span>
+            {{output}}
+        </span>
+    </div>
+</div>
+
+<div *ngIf="selectedValue === 'converter'" class="fleft" style="width: 96%;margin: 2%;">
+    <div class="fleft" style="width: 40%;">
+        <!-- <label style="margin: 10px;
+        font-weight: bold;">From :</label> -->
+        <select name="from" [(ngModel)]="convertModel" class="editSelect" (change)="changeFromTo()">
+            <option value="">Select Conversion type</option>
+            <option value="xlsxtojson">Excel to JSON</option>
+            <option value="jsontoxlsx">JSON to Excel</option>
+            <option value="jsontoxml">JSON to XML</option>
+            <option value="pdftodocx">PDF to Word</option>
+            <option value="docxtopdf">Word to PDF</option>
+            <option value="xmltojson">XML to JSON</option>
+        </select>
+    </div>
+    <div class="fleft width_full" *ngIf="convertModel !== '';">
+        <div class="fleft width50" style="margin: 2% 0%; border: 1px solid gray; text-align: center;">
+            <label class="active_button customCur fleft" style="padding: 2% 4%; width: 10%; margin: 2% 41%;">Browse
+                <input #fileInput id="uploadBrwBtn" [(ngModel)]="convertFileModel" ng2FileSelect [uploader]="uploader" name="file" #file type="file"
+                    hidden (change)="convertfileuploadFn(file,$event)">
+            </label>
+            <div class="msgText fleft width_full" style="margin-bottom: 10px;" [ngClass]="{'errText': invalidFile}">
+                Upload {{convertFrom}} format files.
+            </div>
+            <div class="fleft" style="width: 96%;margin: 2%;" *ngIf="convertFileName !== '';">
+                <div class="fleft width60">
+                    <div title="{{convertFileName}}" class="textOverflow" style="width: 90%; font-weight: bold;">{{convertFileName}}</div>
+                </div>
+                <div class="fright width20" style="text-align: center;">
+                    <span class="optionsLink customCur" (click)="changeFromTo();">Remove</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="fleft width50">
+        <button class="active_button customCur fright" style="padding: 5px 20px;" [disabled]="convertModel === ''" (click)="convert()">Convert</button>
+    </div>
+    <div class="fleft width50 errText" *ngIf="outputPath !== '' && !conversionSuccess">
+        There is an error while processing the file.
+    </div>
+    <div class="fleft width50" *ngIf="outputPath !== '' && conversionSuccess">
+        The converted file placed at {{outputPath}}.
+    </div>
+</div>
+
+<div *ngIf="selectedValue === 'formater'" class="fleft" style="width: 96%;margin: 2%;">
+    <textarea name="inputVal" class="textAreaStyle" [(ngModel)]="inputText"></textarea>
+    <div class="fleft width_full" style="margin-top: 10px;">
+        <button class="customCur active_button" (click)="formatJson()" [disabled]="inputText === ''">
+          Format
+        </button>
+        <button (click)="clearInput()" class="customCur active_button" style="color: rgb(7, 131, 168);
+        background-color: white;
+        border: 1px solid rgb(7, 131, 168);
+        margin-left: 1%;">
+          Clear
+        </button>
+    </div>
+    <div class="fleft outputText" [ngClass]="{'successText':validInput, 'failText': !validInput}" style="margin: 1%;width: 97%;" *ngIf="showResponse && !validInput">
+        <span id="output">
+            {{output}}
+        </span>
+    </div>
+</div>
+
+<div *ngIf="selectedValue === 'merger'" class="fleft" style="width: 96%;margin: 2%;">
+    <div class="fleft width_full">
+        <div class="fleft width40" style="margin: 2% 0%; border: 1px solid gray; text-align: center;">
+            <label class="active_button customCur fleft" style="padding: 2% 4%; width: 10%; margin: 2% 41%;">Browse
+                    <input #fileInput id="uploadBrwBtn" [(ngModel)]="uploadFileModel" ng2FileSelect [uploader]="uploader" name="file" #file type="file"
+                        hidden (change)="fileuploadFn(file)">
+                </label>
+            <div class="msgText fleft width_full" style="margin-bottom: 10px;" [ngClass]="{'errText': invalidFile}">
+                Upload PDF files to merge.
+            </div>
+            <div class="errText fright width_full" *ngIf="pdfAlreadyExists">
+                *Uploaded PDF file already exists.
+            </div>
+        </div>
+        <div *ngIf="pdfMergerList.length > 0" class="fleft width50" style="margin: 2% 4%; border: 1px dotted green;">
+            <div style="padding: 1%; width: 98%;text-align: center;font-weight: bold;">
+                <div class="fleft width_full">
+                    <div class="fleft width50">
+                        File Name
+                    </div>
+                    <div class="fleft width35">
+                        Password
+                    </div>
+                    <div class="fleft width10">
+                        Action
+                    </div>
+                </div>
+            </div>
+            <div *ngFor="let fileVal of pdfMergerList,let i=index" class="fleft" style="padding: 1%; width: 98%;">
+                <div class="fleft width_full">
+                    <div class="fleft width50">
+                        <div title="{{fileVal.name}}" class="textOverflow" style="width: 90%; font-weight: bold;">{{fileVal.name}}</div>
+                    </div>
+                    <div class="fleft width35">
+                        <input name="password_{{i}}" class="editInputBox" [(ngModel)]="fileVal.password" type="text" />
+                    </div>
+                    <div class="fleft width10" style="text-align: center;">
+                        <span class="customCur optionsLink" (click)="removeItem(i)">
+                            Delete
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="fleft width50 errText" *ngIf="outputPath !== '' && !mergeSuccess">
+            There is an error while processing the file.
+        </div>
+        <div class="fleft width50" *ngIf="outputPath !== '' && mergeSuccess">
+            The merged pdf file placed at {{outputPath}}.
+        </div>
+    </div>
+    <div class="fleft width50">
+        <button class="active_button customCur fright" style="padding: 5px 20px;" [disabled]="pdfMergerList.length < 2" (click)="mergeFiles()">Merge</button>
+    </div>
+</div>
+
+
+
+<!-- <router-outlet></router-outlet> -->
